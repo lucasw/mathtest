@@ -44,14 +44,17 @@ function num2digits(num, base) {
 }
 
 // draw an array of digits from right to left
-function DigitDisplay(x, y, length, parent_container) {
+function DigitDisplay(x, y, base, length, parent_container) {
   
+  var base = base;
+
   var boxes = [];
   var box_texts = [];
   var digits = []; 
+  
   for (var i = 0; i < length; i++) {
     var box = new createjs.Shape();
-    box.x = x - (button_size * i + 1);
+    box.x = x - (button_size * (i + 1));
     box.y = y;
     
     var pad = button_size / 20.0;
@@ -70,27 +73,52 @@ function DigitDisplay(x, y, length, parent_container) {
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
-    msg.y = box.y;
-    msg.text ="";
+    msg.y = box.y - bd.height/2;
+    msg.text ="x";
 
     parent_container.addChild(msg);
     box_texts.push(msg);
   
   }
+  
+  // base subscript
+  var show_base = false;
+  if (show_base) {
+    var msg = new createjs.Text("", "1px Courier", "#111");
+    msg.scaleX = button_size / 64;
+    msg.scaleY = button_size / 64;
+    msg.text = base.toString(10);
+    //msg.textAlign = 'center';
+    var bd = msg.getBounds();
+    msg.x = x;
+    msg.y = box.y + button_size - bd.height * msg.scaleY;
 
-  this.setDigits = function(new_digits) {
+    parent_container.addChild(msg);
+  }
+
+  this.num_digits = 0;
+
+  this.setDigits = function(num) {
+  
+    var new_digits = num2digits(num, base);
     
     for (var i = 0; i < digits.length; i++) {
       if (i < new_digits.length) {
         digits[i] = new_digits[i];
-        box_texts[i] = digits[i].toString(16);
+        box_texts[i].text = digits[i].toString(16);
       } else {
         digits[i] = 0;
-        box_texts[i] = "";
+        box_texts[i].text = "";
       }
     }
-  
+    
+    this.num_digits = new_digits.length;
+    //console.log(" new digits " + num + " " + new_digits.length + " " 
+    //    + digits.reverse());
+    stage.update(); 
   }
+
+  this.setDigits(0);
 
   return this;
 }
@@ -99,15 +127,34 @@ function Problem(x, y, num1, num2, base, parent_container) {
   
   var num1 = num1;
   var num2 = num2;
-  
-  var digits1 = num2digits(num1, base);
-  var digits2 = num2digits(num2, base);
 
-  console.log("num1 " + num1 + " " + digits1.reverse())
+  digit_display1.setDigits(num1);
+  digit_display2.setDigits(num2);
+  
+  var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
+  var cur_underline = new createjs.Shape();
+  cur_underline.x = x - (num_digits + 1) * button_size;
+  cur_underline.y = y + button_size;
+  cur_underline.graphics.beginFill("#111111").drawRect(0, 0, button_size * (num_digits + 1), 10);
+  parent_container.addChild(cur_underline);
+
+  {
+    var msg = new createjs.Text("+", "1px Courier", "#111");
+    msg.scaleX = button_size / 16;
+    msg.scaleY = button_size / 16;
+    msg.textAlign = 'center';
+    var bd = msg.getBounds();
+    msg.x = x - (num_digits + 0.5) * button_size;
+    msg.y = y;
+
+    parent_container.addChild(msg);
+  }
+
 
   return this;
 }
 
+// TODO refactor to use DigitDisplay
 function NumEntryBox(x, y, parent_container, num_digits) {
  
   var x = x;
@@ -120,7 +167,7 @@ function NumEntryBox(x, y, parent_container, num_digits) {
   for (var i = 0; i < num_digits; i++) {
 
     var box = new createjs.Shape();
-    box.x = x - button_size * (i );
+    box.x = x - button_size * (i + 1);
     box.y = y;
     
     var pad = button_size / 20.0;
@@ -148,9 +195,9 @@ function NumEntryBox(x, y, parent_container, num_digits) {
   
   var cur_ind = num_digits - 1;
   var cur_underline = new createjs.Shape();
-  cur_underline.x = x - cur_ind * button_size;
+  cur_underline.x = x - (cur_ind + 1) * button_size;
   cur_underline.y = y + button_size;
-  cur_underline.graphics.beginFill("#111111").drawRect(pad, 0, button_size - pad, 10);
+  cur_underline.graphics.beginFill("#313131").drawRect(pad, 0, button_size - pad, 10);
   parent_container.addChild(cur_underline);
 
   this.numClick = function(evt, data) {
@@ -160,7 +207,7 @@ function NumEntryBox(x, y, parent_container, num_digits) {
     console.log("clicked on " + digits[cur_ind]);
     cur_ind -= 1;
     cur_ind = (cur_ind + num_digits) % num_digits;
-    cur_underline.x = x - cur_ind * button_size;
+    cur_underline.x = x - (cur_ind + 1) * button_size;
     
     stage.update();
   }
@@ -226,13 +273,14 @@ function init() {
   context.webkitImageSmoothingEnabled = false;
 
   button_size = ht/5;
-  var x = 0.5 * wd;
+  var x = 0.65 * wd;
   num_entry_box = NumEntryBox(x, button_size * 3, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
   
-  digit_display1 = new DigitDisplay(x, button_size * 1, 5, stage)
-  digit_display2 = new DigitDisplay(x, button_size * 2, 5, stage)
-  //var problem = Problem(0, 0, Math.random() * 100, 1, base, stage);
+  digit_display1 = new DigitDisplay(x, button_size * 1, base, 5, stage)
+  digit_display2 = new DigitDisplay(x, button_size * 2, base, 5, stage)
+  var problem = Problem(x, button_size * 2, Math.random() * 100, 1, base, stage);
+
 
   stage.update();
 }
