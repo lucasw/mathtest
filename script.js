@@ -20,18 +20,74 @@
 
 var stage;
 var numpad;
+var num_entry_box;
 var wd;
 var ht;
 var button_size;
 
-function numClick(evt, data) {
+function NumEntryBox(x, y, parent_container, num_digits) {
+ 
+  var x = x;
+  var y = y;
+  var digits = [];
+  var boxes = [];
+  var box_texts = [];
+  var num_digits = num_digits;
 
-  console.log("clicked on " + data.num);
+  for (var i = 0; i < num_digits; i++) {
+
+    var box = new createjs.Shape();
+    box.x = x + button_size * i;
+    box.y = y;
+    
+    var pad = button_size / 20.0;
+    box.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+    
+    parent_container.addChild(box);
+    boxes.push(box);
+    
+    var digit = 0;
+    digits.push(digit);
+    
+    var msg = new createjs.Text("", "1px Courier", "#111");
+    msg.scaleX = button_size / 16;
+    msg.scaleY = button_size / 16;
+    msg.text = digit.toString(16);
+    msg.textAlign = 'center';
+    var bd = msg.getBounds();
+    msg.x = x + button_size * i + pad + button_size/2;
+    msg.y = y - bd.height/2;
+
+    parent_container.addChild(msg);
+    box_texts.push(msg);
+  }
+  
+  var cur_ind = 0;
+  var cur_underline = new createjs.Shape();
+  cur_underline.x = x + cur_ind * button_size;
+  cur_underline.y = y + button_size;
+  cur_underline.graphics.beginFill("#111111").drawRect(pad, 0, button_size - pad, 10);
+  parent_container.addChild(cur_underline);
+
+  this.numClick = function(evt, data) {
+
+    digits[cur_ind] = data.num;
+    box_texts[cur_ind].text = digits[cur_ind].toString(16);
+    console.log("clicked on " + digits[cur_ind]);
+    cur_ind += 1;
+    cur_ind %= num_digits;
+    cur_underline.x = x + cur_ind * button_size;
+    
+    stage.update();
+  }
+
+  return this;
 }
 
-function NumButton(x, y, num, parent_container) {
+
+function NumButton(x, y, num, parent_container, num_entry_box) {
   var num = num;
- 
+  
   var button = new createjs.Shape();
   button.x = x;
   button.y = y;
@@ -39,8 +95,7 @@ function NumButton(x, y, num, parent_container) {
   button.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
   parent_container.addChild(button);
   //var listener = 
-  button.on("click", numClick, null, false, {num:num});
-  
+  button.on("click", num_entry_box.numClick, null, false, {num:num});
 
   var msg = new createjs.Text("", "1px Courier", "#111");
   msg.scaleX = button_size / 16;
@@ -54,7 +109,7 @@ function NumButton(x, y, num, parent_container) {
 
 }
 
-function NumPad(base, parent_container) {
+function NumPad(base, parent_container, num_entry_box) {
   var number_buttons = [];
 
   var base = base;
@@ -68,7 +123,7 @@ function NumPad(base, parent_container) {
   for (var i = 0; i < base; i++) {
     var x = x_start + button_size * Math.floor(i / buttons_per_column);
     var y = (i % buttons_per_column) * button_size; 
-    var num_button = NumButton(x, y, i, container);
+    var num_button = NumButton(x, y, i, container, num_entry_box);
 
   }
 }
@@ -85,7 +140,7 @@ function init() {
   context.webkitImageSmoothingEnabled = false;
 
   button_size = ht/5;
-  numpad = NumPad(10, stage);
-
+  num_entry_box = NumEntryBox(wd/4, ht/2, stage, 2);
+  numpad = NumPad(10, stage, num_entry_box);
   stage.update();
 }
