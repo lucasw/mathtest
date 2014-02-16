@@ -30,17 +30,28 @@ function numClick(evt, data) {
 }
 
 function NumButton(x, y, num, parent_container) {
-  var msg = new createjs.Text("", "1px Courier", "#111");
   var num = num;
+ 
+  var button = new createjs.Shape();
+  button.x = x;
+  button.y = y;
+  var pad = button_size / 20.0;
+  button.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+  parent_container.addChild(button);
+  //var listener = 
+  button.on("click", numClick, null, false, {num:num});
+  
 
+  var msg = new createjs.Text("", "1px Courier", "#111");
   msg.scaleX = button_size / 16;
   msg.scaleY = button_size / 16;
   msg.text = num.toString(16);
-  msg.x = x;
-  msg.y = y;
+  msg.textAlign = 'center';
+  var bd = msg.getBounds();
+  msg.x = x + pad + button_size/2;
+  msg.y = y - bd.height/2;
   parent_container.addChild(msg);
 
-  var listener = msg.on("click", numClick, null, false, {num:num});
 }
 
 function NumPad(base, parent_container) {
@@ -55,7 +66,6 @@ function NumPad(base, parent_container) {
   var x_start = wd - button_size * Math.ceil(base / buttons_per_column);
 
   for (var i = 0; i < base; i++) {
-    var butto
     var x = x_start + button_size * Math.floor(i / buttons_per_column);
     var y = (i % buttons_per_column) * button_size; 
     var num_button = NumButton(x, y, i, container);
@@ -68,13 +78,13 @@ function init() {
 
   wd = stage.canvas.width;
   ht = stage.canvas.height;
-  button_size = ht/10;
 
   var context = stage.canvas.getContext("2d");
   context.imageSmoothingEnabled = false;
   context.mozImageSmoothingEnabled = false;
   context.webkitImageSmoothingEnabled = false;
 
+  button_size = ht/5;
   numpad = NumPad(10, stage);
 
   stage.update();
