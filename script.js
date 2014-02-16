@@ -24,6 +24,89 @@ var num_entry_box;
 var wd;
 var ht;
 var button_size;
+var digit_display1;
+var digit_display2;
+
+// digits are in reverse order, least sig in first index
+function num2digits(num, base) {
+  
+  num = Math.floor(num);
+
+  var digits = [];
+  
+  do {
+    var new_digit = num % base;
+    digits.push(new_digit);
+    num = Math.floor(num / base); 
+  } while (num != 0);
+
+  return digits;
+}
+
+// draw an array of digits from right to left
+function DigitDisplay(x, y, length, parent_container) {
+  
+  var boxes = [];
+  var box_texts = [];
+  var digits = []; 
+  for (var i = 0; i < length; i++) {
+    var box = new createjs.Shape();
+    box.x = x - (button_size * i + 1);
+    box.y = y;
+    
+    var pad = button_size / 20.0;
+    box.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+    
+    parent_container.addChild(box);
+    boxes.push(box);
+     
+    var digit = 0;
+    digits.push(digit);
+    
+    var msg = new createjs.Text("", "1px Courier", "#111");
+    msg.scaleX = button_size / 16;
+    msg.scaleY = button_size / 16;
+    msg.text = digit.toString(16);
+    msg.textAlign = 'center';
+    var bd = msg.getBounds();
+    msg.x = box.x + pad + button_size/2;
+    msg.y = box.y;
+    msg.text ="";
+
+    parent_container.addChild(msg);
+    box_texts.push(msg);
+  
+  }
+
+  this.setDigits = function(new_digits) {
+    
+    for (var i = 0; i < digits.length; i++) {
+      if (i < new_digits.length) {
+        digits[i] = new_digits[i];
+        box_texts[i] = digits[i].toString(16);
+      } else {
+        digits[i] = 0;
+        box_texts[i] = "";
+      }
+    }
+  
+  }
+
+  return this;
+}
+
+function Problem(x, y, num1, num2, base, parent_container) {
+  
+  var num1 = num1;
+  var num2 = num2;
+  
+  var digits1 = num2digits(num1, base);
+  var digits2 = num2digits(num2, base);
+
+  console.log("num1 " + num1 + " " + digits1.reverse())
+
+  return this;
+}
 
 function NumEntryBox(x, y, parent_container, num_digits) {
  
@@ -57,6 +140,7 @@ function NumEntryBox(x, y, parent_container, num_digits) {
     var bd = msg.getBounds();
     msg.x = x + button_size * i + pad + button_size/2;
     msg.y = y - bd.height/2;
+    msg.text ="";
 
     parent_container.addChild(msg);
     box_texts.push(msg);
@@ -107,6 +191,7 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   msg.y = y - bd.height/2;
   parent_container.addChild(msg);
 
+  return this;
 }
 
 function NumPad(base, parent_container, num_entry_box) {
@@ -128,6 +213,7 @@ function NumPad(base, parent_container, num_entry_box) {
   }
 }
 
+var base = 10;
 function init() {
   stage = new createjs.Stage("mathtest");
 
@@ -140,7 +226,13 @@ function init() {
   context.webkitImageSmoothingEnabled = false;
 
   button_size = ht/5;
-  num_entry_box = NumEntryBox(wd/4, ht/2, stage, 2);
-  numpad = NumPad(10, stage, num_entry_box);
+  var x = 0.5 * wd;
+  num_entry_box = NumEntryBox(x, button_size * 3, stage, 2);
+  numpad = NumPad(base, stage, num_entry_box);
+  
+  digit_display1 = new DigitDisplay(x, button_size * 1, 5, stage)
+  digit_display2 = new DigitDisplay(x, button_size * 2, 5, stage)
+  //var problem = Problem(0, 0, Math.random() * 100, 1, base, stage);
+
   stage.update();
 }
