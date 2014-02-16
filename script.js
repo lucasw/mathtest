@@ -120,7 +120,7 @@ function NumEntryBox(x, y, parent_container, num_digits) {
   for (var i = 0; i < num_digits; i++) {
 
     var box = new createjs.Shape();
-    box.x = x + button_size * i;
+    box.x = x - button_size * (i );
     box.y = y;
     
     var pad = button_size / 20.0;
@@ -138,17 +138,17 @@ function NumEntryBox(x, y, parent_container, num_digits) {
     msg.text = digit.toString(16);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
-    msg.x = x + button_size * i + pad + button_size/2;
-    msg.y = y - bd.height/2;
+    msg.x = box.x + pad + button_size/2;
+    msg.y = box.y - bd.height/2;
     msg.text ="";
 
     parent_container.addChild(msg);
     box_texts.push(msg);
   }
   
-  var cur_ind = 0;
+  var cur_ind = num_digits - 1;
   var cur_underline = new createjs.Shape();
-  cur_underline.x = x + cur_ind * button_size;
+  cur_underline.x = x - cur_ind * button_size;
   cur_underline.y = y + button_size;
   cur_underline.graphics.beginFill("#111111").drawRect(pad, 0, button_size - pad, 10);
   parent_container.addChild(cur_underline);
@@ -158,9 +158,9 @@ function NumEntryBox(x, y, parent_container, num_digits) {
     digits[cur_ind] = data.num;
     box_texts[cur_ind].text = digits[cur_ind].toString(16);
     console.log("clicked on " + digits[cur_ind]);
-    cur_ind += 1;
-    cur_ind %= num_digits;
-    cur_underline.x = x + cur_ind * button_size;
+    cur_ind -= 1;
+    cur_ind = (cur_ind + num_digits) % num_digits;
+    cur_underline.x = x - cur_ind * button_size;
     
     stage.update();
   }
