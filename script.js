@@ -28,6 +28,39 @@ var digit_display1;
 var digit_display2;
 var problem;
 
+
+var did_update = true;
+
+function handleKeyDown(e) {
+  if (!e) { 
+    console.log("tst");
+    var e = window.event;
+    if (!e) {
+      console.log("no event");
+      return false;
+    }
+  }
+  
+  if (!did_update) return;
+ 
+  var key = String.fromCharCode( e.keyCode );
+  console.log("key " + key);
+
+  var regex = /[0-9]|\./;
+  if (regex.test(key)) {
+    num = key.charCodeAt(0) - "0".charCodeAt(0);
+    console.log("key code " + num );
+    var evt;
+    num_entry_box.numClick(evt, {num:num} );
+  }
+
+  switch (e.keyCode) {
+  }
+  return false;
+}
+
+document.onkeypress = handleKeyDown;
+
 // digits are in reverse order, least sig in first index
 function num2digits(num, base) {
   
@@ -140,7 +173,8 @@ function Problem(x, y, num1, num2, base, parent_container) {
   var underline = new createjs.Shape();
   underline.x = x - (num_digits + 1) * button_size;
   underline.y = y + button_size;
-  underline.graphics.beginFill("#111111").drawRect(0, 0, button_size * (num_digits + 1), 10);
+  underline.graphics.beginFill("#111111").drawRect(
+      0, 0, button_size * (num_digits + 1), button_size/20);
   parent_container.addChild(underline);
 
   {
@@ -170,14 +204,14 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   var boxes = [];
   var box_texts = [];
   var num_digits = num_digits;
+  
+  var pad = button_size / 40.0;
 
   for (var i = 0; i < num_digits; i++) {
 
     var box = new createjs.Shape();
     box.x = x - button_size * (i + 1);
     box.y = y;
-    
-    var pad = button_size / 40.0;
     box.graphics.beginFill("#eeeeee").drawRect(
         pad, pad, button_size - pad * 2, button_size - pad * 2);
     
@@ -202,21 +236,35 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   }
   
   var cur_ind = num_digits - 1;
+  boxes[cur_ind].graphics.beginFill("#aaffaa").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+
+
+  if (false) {
   var cur_underline = new createjs.Shape();
   cur_underline.x = x - (cur_ind + 1) * button_size;
   cur_underline.y = y + button_size;
-  cur_underline.graphics.beginFill("#919591").drawRect(pad, 0, button_size - pad * 2, 10);
+  cur_underline.graphics.beginFill("#919591").drawRect(pad, 0, button_size - pad * 2, pad);
   parent_container.addChild(cur_underline);
+  }
 
   this.numClick = function(evt, data) {
 
     digits[cur_ind] = data.num;
     box_texts[cur_ind].text = digits[cur_ind].toString(16);
     console.log("clicked on " + digits[cur_ind]);
+    
+    boxes[cur_ind].graphics.clear();
+    boxes[cur_ind].graphics.beginFill("#eeeeee").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+    
     cur_ind -= 1;
     cur_ind = (cur_ind + num_digits) % num_digits;
-    cur_underline.x = x - (cur_ind + 1) * button_size;
-   
+    //cur_underline.x = x - (cur_ind + 1) * button_size;
+    boxes[cur_ind].graphics.clear();
+    boxes[cur_ind].graphics.beginFill("#aaffaa").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+
     var answer = 0;
     var factor = 1;
     for (var i = 0; i < digits.length; i++) {
@@ -228,12 +276,14 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     if (answer === problem.answer) {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#11ee11").drawRect(
-          x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
+          x + indicator_pad, y + indicator_pad, 
+          button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "\u2714";
     } else {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#ff5555").drawRect(
-          x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
+          x + indicator_pad, y + indicator_pad, 
+          button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "";
     }
     stage.update();
@@ -242,9 +292,10 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   // show whether user got problem right or now
   {
   var indicator = new createjs.Shape();
-  var pad = button_size / 6.0;
+  var indicator_pad = button_size / 6.0;
   indicator.graphics.beginFill("#ff5555").drawRect(
-      x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
+      x + indicator_pad, y + indicator_pad, 
+      button_size - indicator_pad * 2, button_size - indicator_pad * 2);
   parent_container.addChild(indicator);
   var indicator_msg = new createjs.Text("", "1px Courier", "#111");
   indicator_msg.scaleX = button_size / 20.0;
