@@ -58,8 +58,9 @@ function DigitDisplay(x, y, base, length, parent_container) {
     box.x = x - (button_size * (i + 1));
     box.y = y;
     
-    var pad = button_size / 20.0;
-    box.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+    var pad = button_size / 40.0;
+    box.graphics.beginFill("#eeeeee").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
     
     parent_container.addChild(box);
     boxes.push(box);
@@ -176,8 +177,9 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     box.x = x - button_size * (i + 1);
     box.y = y;
     
-    var pad = button_size / 20.0;
-    box.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+    var pad = button_size / 40.0;
+    box.graphics.beginFill("#eeeeee").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
     
     parent_container.addChild(box);
     boxes.push(box);
@@ -203,7 +205,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   var cur_underline = new createjs.Shape();
   cur_underline.x = x - (cur_ind + 1) * button_size;
   cur_underline.y = y + button_size;
-  cur_underline.graphics.beginFill("#919591").drawRect(pad, 0, button_size - pad, 10);
+  cur_underline.graphics.beginFill("#919591").drawRect(pad, 0, button_size - pad * 2, 10);
   parent_container.addChild(cur_underline);
 
   this.numClick = function(evt, data) {
@@ -224,17 +226,34 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     console.log("answer " + answer + " " + problem.answer);
     
     if (answer === problem.answer) {
-      indicator.graphics.beginFill("#11ee11").drawRect(x, y, button_size, button_size);
+      indicator.graphics.clear();
+      indicator.graphics.beginFill("#11ee11").drawRect(
+          x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
+      indicator_msg.text = "\u2714";
     } else {
-      indicator.graphics.beginFill("#881111").drawRect(x, y, button_size, button_size);
+      indicator.graphics.clear();
+      indicator.graphics.beginFill("#ff5555").drawRect(
+          x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
+      indicator_msg.text = "";
     }
     stage.update();
   }
 
+  // show whether user got problem right or now
+  {
   var indicator = new createjs.Shape();
-  indicator.graphics.beginFill("#881111").drawRect(x, y, button_size, button_size);
+  var pad = button_size / 6.0;
+  indicator.graphics.beginFill("#ff5555").drawRect(
+      x + pad, y + pad, button_size - pad * 2, button_size - pad * 2);
   parent_container.addChild(indicator);
-
+  var indicator_msg = new createjs.Text("", "1px Courier", "#111");
+  indicator_msg.scaleX = button_size / 20.0;
+  indicator_msg.scaleY = button_size / 20.0;
+  indicator_msg.x = x + button_size/2;
+  indicator_msg.y = y + pad/2;
+  indicator_msg.textAlign = 'center';
+  parent_container.addChild(indicator_msg);
+  }
   return this;
 }
 
@@ -245,8 +264,9 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   var button = new createjs.Shape();
   button.x = x;
   button.y = y;
-  var pad = button_size / 20.0;
-  button.graphics.beginFill("#eeeeee").drawRect(pad, pad, button_size - pad, button_size - pad);
+  var pad = button_size / 40.0;
+  button.graphics.beginFill("#eeeeee").drawRect(
+      pad, pad, button_size - pad * 2, button_size - pad * 2);
   parent_container.addChild(button);
   //var listener = 
   button.on("click", num_entry_box.numClick, null, false, {num:num});
