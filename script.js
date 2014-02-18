@@ -44,12 +44,12 @@ function handleKeyDown(e) {
   if (!did_update) return;
  
   var key = String.fromCharCode( e.keyCode );
-  console.log("key " + key);
+  //console.log("key " + key);
 
   var regex = /[0-9]|\./;
   if (regex.test(key)) {
     num = key.charCodeAt(0) - "0".charCodeAt(0);
-    console.log("key code " + num );
+    //console.log("key code " + num );
     var evt;
     num_entry_box.numClick(evt, {num:num} );
   }
@@ -248,30 +248,43 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   parent_container.addChild(cur_underline);
   }
 
-  this.numClick = function(evt, data) {
-
-    digits[cur_ind] = data.num;
-    box_texts[cur_ind].text = digits[cur_ind].toString(16);
-    console.log("clicked on " + digits[cur_ind]);
-    
-    boxes[cur_ind].graphics.clear();
-    boxes[cur_ind].graphics.beginFill("#eeeeee").drawRect(
-        pad, pad, button_size - pad * 2, button_size - pad * 2);
-    
-    cur_ind -= 1;
-    cur_ind = (cur_ind + num_digits) % num_digits;
-    //cur_underline.x = x - (cur_ind + 1) * button_size;
+  var selectBox = function(ind) {
     boxes[cur_ind].graphics.clear();
     boxes[cur_ind].graphics.beginFill("#aaffaa").drawRect(
         pad, pad, button_size - pad * 2, button_size - pad * 2);
+    box_texts[cur_ind].color = "#555";
+  }
+  
+  var unSelectBox = function(ind) {
+ 
+    boxes[ind].graphics.clear();
+    boxes[ind].graphics.beginFill("#eeeeee").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+    box_texts[ind].color = "#000";
+  }
+  
+  this.numClick = function(evt, data) {
+    numpad.highlight(data.num);
+    
+    digits[cur_ind] = data.num;
 
-    var answer = 0;
+    unSelectBox(cur_ind);
+
+    box_texts[cur_ind].text = digits[cur_ind].toString(16);
+    console.log("entered digit " + digits[cur_ind]);
+       cur_ind -= 1;
+    cur_ind = (cur_ind + num_digits) % num_digits;
+    //cur_underline.x = x - (cur_ind + 1) * button_size;
+    
+    selectBox(cur_ind);
+    
+        var answer = 0;
     var factor = 1;
     for (var i = 0; i < digits.length; i++) {
       answer += digits[i] * factor;
       factor *= base;
     }
-    console.log("answer " + answer + " " + problem.answer);
+    //console.log("answer " + answer + " " + problem.answer);
     
     if (answer === problem.answer) {
       indicator.graphics.clear();
@@ -316,8 +329,6 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   button.x = x;
   button.y = y;
   var pad = button_size / 40.0;
-  button.graphics.beginFill("#eeeeee").drawRect(
-      pad, pad, button_size - pad * 2, button_size - pad * 2);
   parent_container.addChild(button);
   //var listener = 
   button.on("click", num_entry_box.numClick, null, false, {num:num});
@@ -332,11 +343,25 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   msg.y = y - bd.height/2;
   parent_container.addChild(msg);
 
+  this.unHighlight = function() {
+    button.graphics.clear();
+    button.graphics.beginFill("#eeeeee").drawRect(
+      pad, pad, button_size - pad * 2, button_size - pad * 2);
+
+  }
+  this.highlight = function() {
+    console.log("highlight " + num);
+    button.graphics.clear();
+    button.graphics.beginFill("#ddffdd").drawRect(
+      pad, pad, button_size - pad * 2, button_size - pad * 2);
+  }
+
+  this.unHighlight();
+  //
   return this;
 }
 
 function NumPad(base, parent_container, num_entry_box) {
-  var number_buttons = [];
 
   var base = base;
 
@@ -346,12 +371,29 @@ function NumPad(base, parent_container, num_entry_box) {
   var buttons_per_column = Math.floor(ht / button_size);
   var x_start = wd - button_size * Math.ceil(base / buttons_per_column);
 
+  var num_buttons = [];
   for (var i = 0; i < base; i++) {
     var x = x_start + button_size * Math.floor(i / buttons_per_column);
     var y = (i % buttons_per_column) * button_size; 
-    var num_button = NumButton(x, y, i, container, num_entry_box);
-
+    var num_button = new NumButton(x, y, i, container, num_entry_box);
+    num_buttons.push(num_button);
+    //num_buttons[0].highlight();
   }
+
+  this.highlight = function(num) {
+    for (var i = 0; i < num_buttons.length; i++) {
+      if (i === num) {
+        console.log("highlighting " + i);
+        num_buttons[i].highlight();
+      } else {
+        num_buttons[i].unHighlight();
+      }
+    }
+    stage.update();
+  }
+
+
+  return this;
 }
 
 var base = 10;
