@@ -169,12 +169,13 @@ function Problem(x, y, num1, num2, base, parent_container) {
   digit_display1.setDigits(num1);
   digit_display2.setDigits(num2);
   
+  var pad = button_size/25;
   var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
   var underline = new createjs.Shape();
   underline.x = x - (num_digits + 1) * button_size;
   underline.y = y + button_size;
   underline.graphics.beginFill("#111111").drawRect(
-      0, 0, button_size * (num_digits + 1), button_size/20);
+      0, -pad/2, button_size * (num_digits + 1), pad);
   parent_container.addChild(underline);
 
   {
@@ -205,19 +206,32 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   var box_texts = [];
   var num_digits = num_digits;
   
-  var pad = button_size / 40.0;
+  var pad = button_size / 30.0;
+
+  var selectBox = function(ind) {
+    boxes[ind].graphics.clear();
+    boxes[ind].graphics.beginStroke("#111").beginFill("#aaffaa").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+    box_texts[ind].color = "#555";
+  }
+  
+  var unSelectBox = function(ind) {
+ 
+    boxes[ind].graphics.clear();
+    boxes[ind].graphics.beginFill("#eeeeee").drawRect(
+        pad, pad, button_size - pad * 2, button_size - pad * 2);
+    box_texts[ind].color = "#000";
+  }
 
   for (var i = 0; i < num_digits; i++) {
 
     var box = new createjs.Shape();
     box.x = x - button_size * (i + 1);
     box.y = y;
-    box.graphics.beginFill("#eeeeee").drawRect(
-        pad, pad, button_size - pad * 2, button_size - pad * 2);
-    
+
     parent_container.addChild(box);
     boxes.push(box);
-    
+
     var digit = 0;
     digits.push(digit);
     
@@ -228,17 +242,17 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
-    msg.y = box.y - bd.height/2;
+    msg.y = box.y - bd.height;
     msg.text ="";
 
     parent_container.addChild(msg);
     box_texts.push(msg);
+    
+    unSelectBox(i);
   }
   
   var cur_ind = num_digits - 1;
-  boxes[cur_ind].graphics.beginFill("#aaffaa").drawRect(
-        pad, pad, button_size - pad * 2, button_size - pad * 2);
-
+  selectBox(cur_ind);
 
   if (false) {
   var cur_underline = new createjs.Shape();
@@ -248,20 +262,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   parent_container.addChild(cur_underline);
   }
 
-  var selectBox = function(ind) {
-    boxes[cur_ind].graphics.clear();
-    boxes[cur_ind].graphics.beginFill("#aaffaa").drawRect(
-        pad, pad, button_size - pad * 2, button_size - pad * 2);
-    box_texts[cur_ind].color = "#555";
-  }
-  
-  var unSelectBox = function(ind) {
- 
-    boxes[ind].graphics.clear();
-    boxes[ind].graphics.beginFill("#eeeeee").drawRect(
-        pad, pad, button_size - pad * 2, button_size - pad * 2);
-    box_texts[ind].color = "#000";
-  }
+
   
   this.numClick = function(evt, data) {
     numpad.highlight(data.num);
@@ -352,7 +353,7 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   this.highlight = function() {
     console.log("highlight " + num);
     button.graphics.clear();
-    button.graphics.beginFill("#ddffdd").drawRect(
+    button.graphics.beginFill("#cbcbcb").drawRect(
       pad, pad, button_size - pad * 2, button_size - pad * 2);
   }
 
