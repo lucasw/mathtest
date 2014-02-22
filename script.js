@@ -26,8 +26,11 @@ var ht;
 var button_size;
 var digit_display1;
 var digit_display2;
-var problem;
 
+var problem_area;
+var problems = [];
+// index into problems
+var cur_problem;
 
 var did_update = true;
 
@@ -159,15 +162,44 @@ function DigitDisplay(x, y, base, length, parent_container) {
   return this;
 }
 
-// Fixed to addition currently
-function Problem(x, y, num1, num2, base, parent_container) {
-  
-  var num1 = Math.floor(num1);
-  var num2 = Math.floor(num2);
+function Problem(x, y, sz, num1, num2, parent_container) {
+  this.num1 = num1;
+  this.num2 = num2;
+  // later have problem types for subtraction and multiplication and division
   this.answer = num1 + num2;
 
-  digit_display1.setDigits(num1);
-  digit_display2.setDigits(num2);
+  var x = x;
+  var y = y;
+  var sz = sz;
+  // a small box
+  var indicator = new createjs.Shape();
+  var pad = sz/10.0;
+  indicator.graphics.beginFill("#555555").drawRect(
+      x + pad, y + pad, 
+      sz - pad * 2, sz - pad * 2);
+  parent_container.addChild(indicator);
+  
+  this.gotWrong = function() {
+
+    indicator.graphics.clear();
+    indicator.graphics.beginFill("#ff5555").drawRect(
+      x + pad, y + pad, 
+      sz - pad * 2, sz - pad * 2);
+
+  }
+
+  this.gotRight = function() {
+    console.log("got right");
+    indicator.graphics.clear();
+    indicator.graphics.beginFill("#55ff55").drawRect(
+      x + pad, y + pad, 
+      sz - pad * 2, sz - pad * 2);
+
+  }
+}
+
+// Fixed to addition currently
+function ProblemArea(x, y, base, parent_container) {
   
   var pad = button_size/25;
   var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
@@ -189,8 +221,6 @@ function Problem(x, y, num1, num2, base, parent_container) {
 
     parent_container.addChild(msg);
   }
-
-
 
   return this;
 }
@@ -279,7 +309,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     
     selectBox(cur_ind);
     
-        var answer = 0;
+    var answer = 0;
     var factor = 1;
     for (var i = 0; i < digits.length; i++) {
       answer += digits[i] * factor;
@@ -287,18 +317,20 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     }
     //console.log("answer " + answer + " " + problem.answer);
     
-    if (answer === problem.answer) {
+    if (answer === problems[cur_problem].answer) {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#11ee11").drawRect(
           x + indicator_pad, y + indicator_pad, 
           button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "\u2714";
+      problems[cur_problem].gotRight();
     } else {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#ff5555").drawRect(
           x + indicator_pad, y + indicator_pad, 
           button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "";
+      problems[cur_problem].gotWrong();
     }
     stage.update();
   }
@@ -397,7 +429,9 @@ function NumPad(base, parent_container, num_entry_box) {
   return this;
 }
 
+// later pass this in via web form or url args
 var base = 10;
+
 function init() {
   stage = new createjs.Stage("mathtest");
 
@@ -414,10 +448,26 @@ function init() {
   num_entry_box = NumEntryBox(x, button_size * 3, base, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
   
-  digit_display1 = new DigitDisplay(x, button_size * 1, base, 5, stage)
-  digit_display2 = new DigitDisplay(x, button_size * 2, base, 5, stage)
-  problem = Problem(x, button_size * 2, Math.random() * 100, 1, base, stage);
+  digit_display1 = new DigitDisplay(x, button_size * 1, base, 5, stage);
+  digit_display2 = new DigitDisplay(x, button_size * 2, base, 5, stage);
 
+  var sz = 10;
+  var j_max = 3;
+  var i_max = 100 - j_max;
+  for (var i = 0; i < i_max; i++) {
+    for (var j = 0; j < j_max; j++) {
+      var px = sz + i * sz;
+      var py = sz + j * sz;
+      var prob = new Problem(px, py, sz, i, j, stage);
+      problems.push(prob);
+    }
+  }
+  
+  cur_problem = Math.floor(Math.random() * problems.length);
+  problem_area = ProblemArea(x, button_size * 2, base, stage);
+
+  digit_display1.setDigits(problems[cur_problem].num1);
+  digit_display2.setDigits(problems[cur_problem].num2);
 
   stage.update();
 }
