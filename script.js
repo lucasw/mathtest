@@ -55,9 +55,14 @@ function handleKeyDown(e) {
     //console.log("key code " + num );
     var evt;
     num_entry_box.numClick(evt, {num:num} );
+
+    return false;
   }
 
   switch (e.keyCode) {
+    case 13: // enter
+      nextProblem(); 
+      break;
   }
   return false;
 }
@@ -293,22 +298,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
   }
 
 
-  
-  this.numClick = function(evt, data) {
-    numpad.highlight(data.num);
-    
-    digits[cur_ind] = data.num;
-
-    unSelectBox(cur_ind);
-
-    box_texts[cur_ind].text = digits[cur_ind].toString(16);
-    console.log("entered digit " + digits[cur_ind]);
-       cur_ind -= 1;
-    cur_ind = (cur_ind + num_digits) % num_digits;
-    //cur_underline.x = x - (cur_ind + 1) * button_size;
-    
-    selectBox(cur_ind);
-    
+  this.checkAnswer = function() {
     var answer = 0;
     var factor = 1;
     for (var i = 0; i < digits.length; i++) {
@@ -333,6 +323,24 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
       problems[cur_problem].gotWrong();
     }
     stage.update();
+  }
+  
+  this.numClick = function(evt, data) {
+    numpad.highlight(data.num);
+    
+    digits[cur_ind] = data.num;
+
+    unSelectBox(cur_ind);
+
+    box_texts[cur_ind].text = digits[cur_ind].toString(16);
+    console.log("entered digit " + digits[cur_ind]);
+       cur_ind -= 1;
+    cur_ind = (cur_ind + num_digits) % num_digits;
+    //cur_underline.x = x - (cur_ind + 1) * button_size;
+    
+    selectBox(cur_ind);
+    
+    this.checkAnswer(); 
   }
 
   // show whether user got problem right or now
@@ -429,6 +437,13 @@ function NumPad(base, parent_container, num_entry_box) {
   return this;
 }
 
+function nextProblem() {
+  cur_problem = Math.floor(Math.random() * problems.length);
+  digit_display1.setDigits(problems[cur_problem].num1);
+  digit_display2.setDigits(problems[cur_problem].num2);
+  num_entry_box.checkAnswer();
+}
+
 // later pass this in via web form or url args
 var base = 10;
 
@@ -456,18 +471,17 @@ function init() {
   var i_max = 100 - j_max;
   for (var i = 0; i < i_max; i++) {
     for (var j = 0; j < j_max; j++) {
-      var px = sz + i * sz;
-      var py = sz + j * sz;
+      var ind = i + j * i_max;
+      var num_row = Math.floor(wd / (1.5 * sz));
+      var px = sz + sz * (ind % num_row);
+      var py = sz + sz * Math.floor(ind / num_row);
       var prob = new Problem(px, py, sz, i, j, stage);
       problems.push(prob);
     }
   }
   
-  cur_problem = Math.floor(Math.random() * problems.length);
   problem_area = ProblemArea(x, button_size * 2, base, stage);
-
-  digit_display1.setDigits(problems[cur_problem].num1);
-  digit_display2.setDigits(problems[cur_problem].num2);
+  nextProblem();
 
   stage.update();
 }
