@@ -184,10 +184,11 @@ function DigitDisplay(x, y, base, length, parent_container) {
 }
 
 function Problem(x, y, sz, num1, num2, parent_container) {
-  this.num1 = num1;
-  this.num2 = num2;
+  this.num1 = Math.floor(num1);
+  this.num2 = Math.floor(num2);
   // later have problem types for subtraction and multiplication and division
-  this.answer = num1 + num2;
+  this.answer = this.num1 + this.num2;
+  console.log("problem " + this.num1 + " " + this.num2 + " " + this.answer);
 
   var x = x;
   var y = y;
@@ -332,7 +333,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
       answer += digits[i] * factor;
       factor *= base;
     }
-    //console.log("answer " + answer + " " + problem.answer);
+    console.log("answer " + answer + " " + problems[cur_problem].answer);
     
     if (answer === problems[cur_problem].answer) {
       indicator.graphics.clear();
