@@ -67,7 +67,7 @@ function handleKeyDown(e) {
   {
     // lowercase characters for base > 10
     num = key.charCodeAt(0) - "a".charCodeAt(0) + 10;
-    if (num < base) {
+    if ((num >= 0) && (num < base)) {
       var evt;
       num_entry_box.numClick(evt, {num:num} );
       return false;
@@ -77,6 +77,7 @@ function handleKeyDown(e) {
   switch (e.keyCode) {
     case 13: // enter
       nextProblem(); 
+      return false;
       break;
   }
   return false;
