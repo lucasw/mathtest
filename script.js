@@ -489,10 +489,33 @@ function init() {
   button_size = ht/6;
   var x = 0.55 * wd;
 
-  url_base = getURLParameter("base");
+  var url_base = getURLParameter("base");
   if (!isNaN(url_base) && (url_base > 0)) {
     base = url_base;
   }
+
+  var min_op1 = 0;
+  var max_op1 = 20;
+  var min_op2 = 0;
+  var max_op2 = 3;
+
+  var tmp = getURLParameter("min_op1");
+  if (!isNaN(tmp) && (tmp >= 0)) {
+    min_op1 = tmp;
+  }
+  var tmp = getURLParameter("max_op1");
+  if (!isNaN(tmp) && (tmp > 0)) {
+    max_op1 = tmp;
+  }
+  var tmp = getURLParameter("min_op2");
+  if (!isNaN(tmp) && (tmp >= 0)) {
+    min_op2 = tmp;
+  }
+  var tmp = getURLParameter("max_op2");
+  if (!isNaN(tmp) && (tmp > 0)) {
+    max_op2 = tmp;
+  }
+  console.log("ops " + min_op1 + " - " + max_op1 + ", " + min_op2 + " - " + max_op2);
 
   num_entry_box = NumEntryBox(x, button_size * 4, base, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
@@ -501,11 +524,9 @@ function init() {
   digit_display2 = new DigitDisplay(x, button_size * 3, base, 5, stage);
 
   var sz = 10;
-  var j_max = 3;
-  var i_max = 100 - j_max;
-  for (var i = 0; i < i_max; i++) {
-    for (var j = 0; j < j_max; j++) {
-      var ind = i + j * i_max;
+  for (var i = min_op1; i < max_op1; i++) {
+    for (var j = min_op2; j < max_op2; j++) {
+      var ind = (i - min_op1) + (j - min_op2) * (max_op1 - min_op1);
       var num_row = Math.floor(wd / (1.5 * sz));
       var px = sz + sz * (ind % num_row);
       var py = sz + sz * Math.floor(ind / num_row);
