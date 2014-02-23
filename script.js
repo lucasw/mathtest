@@ -127,7 +127,7 @@ function DigitDisplay(x, y, base, length, parent_container) {
     var msg = new createjs.Text("", "1px Courier", "#111");
     msg.scaleX = button_size / 16;
     msg.scaleY = button_size / 16;
-    msg.text = digit.toString(16);
+    msg.text = digit.toString(base);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
@@ -141,7 +141,7 @@ function DigitDisplay(x, y, base, length, parent_container) {
   
   // base subscript
   var show_base = true;
-  if (base === 10) show_base = false;
+  if (base == 10) show_base = false;
   if (show_base) {
     var msg = new createjs.Text("", "1px Courier", "#111");
     msg.scaleX = button_size / 64;
@@ -165,7 +165,7 @@ function DigitDisplay(x, y, base, length, parent_container) {
     for (var i = 0; i < digits.length; i++) {
       if (i < new_digits.length) {
         digits[i] = new_digits[i];
-        box_texts[i].text = digits[i].toString(16);
+        box_texts[i].text = digits[i].toString(base);
       } else {
         digits[i] = 0;
         box_texts[i].text = "";
@@ -173,8 +173,8 @@ function DigitDisplay(x, y, base, length, parent_container) {
     }
     
     this.num_digits = new_digits.length;
-    //console.log(" new digits " + num + " " + new_digits.length + " " 
-    //    + digits.reverse());
+    console.log(" new digits " + num + " " + new_digits.length + " " 
+        + digits.reverse());
     stage.update(); 
   }
 
@@ -222,26 +222,37 @@ function Problem(x, y, sz, num1, num2, parent_container) {
 // Fixed to addition currently
 function ProblemArea(x, y, base, parent_container) {
   
-  var pad = button_size/25;
-  var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
-  var underline = new createjs.Shape();
-  underline.x = x - (num_digits + 1) * button_size;
-  underline.y = y + button_size;
-  underline.graphics.beginFill("#111111").drawRect(
-      0, -pad/2, button_size * (num_digits + 1), pad);
-  parent_container.addChild(underline);
+  var x = x;
+  var y = y;
+  var base = base;
 
-  {
-    var msg = new createjs.Text("+", "1px Courier", "#111");
+  var pad = button_size/25;
+  var msg = new createjs.Text("+", "1px Courier", "#111");
+  parent_container.addChild(msg);
+  var underline = new createjs.Shape();
+  parent_container.addChild(underline);
+  
+  var num_digits = 0;
+
+  this.update = function( ) {
+    num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
+    console.log("num digits problem area " + num_digits + " " + 
+        digit_display1.num_digits + " " + digit_display2.num_digits);
+    underline.x = x - (num_digits + 1) * button_size;
+    underline.y = y + button_size;
+    underline.graphics.clear();
+    underline.graphics.beginFill("#111111").drawRect(
+        0, -pad/2, button_size * (num_digits + 1), pad);
+
     msg.scaleX = button_size / 16;
     msg.scaleY = button_size / 16;
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = x - (num_digits + 0.5) * button_size;
     msg.y = y;
-
-    parent_container.addChild(msg);
   }
+
+  update();
 
   return this;
 }
@@ -289,7 +300,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
     var msg = new createjs.Text("", "1px Courier", "#111");
     msg.scaleX = button_size / 16;
     msg.scaleY = button_size / 16;
-    msg.text = digit.toString(16);
+    msg.text = digit.toString(base);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
@@ -348,7 +359,7 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
 
     unSelectBox(cur_ind);
 
-    box_texts[cur_ind].text = digits[cur_ind].toString(16);
+    box_texts[cur_ind].text = digits[cur_ind].toString(base);
     console.log("entered digit " + digits[cur_ind]);
        cur_ind -= 1;
     cur_ind = (cur_ind + num_digits) % num_digits;
@@ -393,7 +404,7 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   var msg = new createjs.Text("", "1px Courier", "#111");
   msg.scaleX = button_size / 16;
   msg.scaleY = button_size / 16;
-  msg.text = num.toString(16);
+  msg.text = num.toString(base);
   msg.textAlign = 'center';
   var bd = msg.getBounds();
   msg.x = x + pad + button_size/2;
@@ -458,6 +469,7 @@ function nextProblem() {
   digit_display1.setDigits(problems[cur_problem].num1);
   digit_display2.setDigits(problems[cur_problem].num2);
   num_entry_box.checkAnswer();
+  problem_area.update();
 }
 
 // later pass this in via web form or url args
