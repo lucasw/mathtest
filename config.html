@@ -7,9 +7,30 @@ Select a base:
 <form action="">
 <select name="base">
 <option value="2">2</option>
-<option value="10">10</option>
+<option value="10" selected="selected">10</option>
 <option value="16">16</option>
 </select>
+
+<br><br>
+
+Operand 1 min<input type="number" name="min_op1" min="0"   max="89" value="0"/>
+max <input type="number" name="max_op1" min="-30" max="30" value="30"/>
+<br>
+Operand 2 min <input type="number" name="min_op2" min="-30" max="30" value="0"/>
+max <input type="number" name="max_op2" min="-30" max="30" value="3"/>
+
+<br>
+<br>
+Select which operators to use:
+<br>
+
+<input type="radio" name="op" value="+">+<br>
+<input type="radio" name="op" value="-">-<br>
+<input type="radio" name="op" value="*">*<br>
+<input type="radio" name="op" value="/">/<br>
+</form>
+
+
 
 </body>
 </html>
