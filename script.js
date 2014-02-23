@@ -34,6 +34,11 @@ var cur_problem;
 
 var did_update = true;
 
+// http://stackoverflow.com/questions/11582512/how-to-get-url-parameters-with-javascript
+function getURLParameter(name) {
+  return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+}
+
 function handleKeyDown(e) {
   if (!e) { 
     console.log("tst");
@@ -57,6 +62,16 @@ function handleKeyDown(e) {
     num_entry_box.numClick(evt, {num:num} );
 
     return false;
+  }
+
+  {
+    // lowercase characters for base > 10
+    num = key.charCodeAt(0) - "a".charCodeAt(0) + 10;
+    if (num < base) {
+      var evt;
+      num_entry_box.numClick(evt, {num:num} );
+      return false;
+    }
   }
 
   switch (e.keyCode) {
@@ -125,7 +140,8 @@ function DigitDisplay(x, y, base, length, parent_container) {
   }
   
   // base subscript
-  var show_base = false;
+  var show_base = true;
+  if (base === 10) show_base = false;
   if (show_base) {
     var msg = new createjs.Text("", "1px Courier", "#111");
     msg.scaleX = button_size / 64;
@@ -458,13 +474,19 @@ function init() {
   context.mozImageSmoothingEnabled = false;
   context.webkitImageSmoothingEnabled = false;
 
-  button_size = ht/5;
-  var x = 0.65 * wd;
-  num_entry_box = NumEntryBox(x, button_size * 3, base, stage, 2);
+  button_size = ht/6;
+  var x = 0.55 * wd;
+
+  url_base = getURLParameter("base");
+  if (!isNaN(url_base) && (url_base > 0)) {
+    base = url_base;
+  }
+
+  num_entry_box = NumEntryBox(x, button_size * 4, base, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
   
-  digit_display1 = new DigitDisplay(x, button_size * 1, base, 5, stage);
-  digit_display2 = new DigitDisplay(x, button_size * 2, base, 5, stage);
+  digit_display1 = new DigitDisplay(x, button_size * 2, base, 5, stage);
+  digit_display2 = new DigitDisplay(x, button_size * 3, base, 5, stage);
 
   var sz = 10;
   var j_max = 3;
@@ -480,7 +502,7 @@ function init() {
     }
   }
   
-  problem_area = ProblemArea(x, button_size * 2, base, stage);
+  problem_area = ProblemArea(x, button_size * 3, base, stage);
   nextProblem();
 
   stage.update();
