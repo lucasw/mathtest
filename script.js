@@ -26,7 +26,6 @@ var ht;
 var button_size;
 var digit_display1;
 var digit_display2;
-
 var problem_area;
 var problems;
 // index into problems
@@ -221,9 +220,11 @@ function Problem(x, y, sz, num1, num2, parent_container) {
   }
 }
 
+// the operand and underline
 // Fixed to addition currently
-function ProblemArea(x, y, base, parent_container) {
+function ProblemArea(x, y, base, button_size, parent_container) {
   
+  var button_size = button_size;
   var x = x;
   var y = y;
   var base = base;
@@ -254,7 +255,7 @@ function ProblemArea(x, y, base, parent_container) {
     msg.y = y;
   }
 
-  update();
+  this.update();
 
   return this;
 }
@@ -270,9 +271,27 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
   var boxes = [];
   var box_texts = [];
   var num_digits = num_digits;
+  var cur_ind = num_digits - 1;
   
   var pad = button_size / 30.0;
 
+  // show whether user got problem right or now
+  {
+  var indicator = new createjs.Shape();
+  var indicator_pad = button_size / 6.0;
+  indicator.graphics.beginFill("#ff5555").drawRect(
+      x + indicator_pad, y + indicator_pad, 
+      button_size - indicator_pad * 2, button_size - indicator_pad * 2);
+  parent_container.addChild(indicator);
+  var indicator_msg = new createjs.Text("", "1px Courier", "#111");
+  indicator_msg.scaleX = button_size / 20.0;
+  indicator_msg.scaleY = button_size / 20.0;
+  indicator_msg.x = x + button_size/2;
+  indicator_msg.y = y + pad/2;
+  indicator_msg.textAlign = 'center';
+  parent_container.addChild(indicator_msg);
+  }
+  
   var selectBox = function(ind) {
     boxes[ind].graphics.clear();
     boxes[ind].graphics.beginStroke("#111").beginFill("#aaffaa").drawRect(
@@ -315,9 +334,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     
     unSelectBox(i);
   }
-  
-  var cur_ind = num_digits - 1;
-  selectBox(cur_ind);
+ 
 
   if (false) {
   var cur_underline = new createjs.Shape();
@@ -356,15 +373,16 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
   }
   
   this.numClick = function(evt, data) {
-    numpad.highlight(data.num);
+    if (numpad != null)
+      numpad.highlight(data.num);
     
     digits[cur_ind] = data.num;
 
     unSelectBox(cur_ind);
 
     box_texts[cur_ind].text = digits[cur_ind].toString(base);
-    console.log("entered digit " + digits[cur_ind]);
-       cur_ind -= 1;
+    //console.log("entered digit " + digits[cur_ind]);
+    cur_ind -= 1;
     cur_ind = (cur_ind + num_digits) % num_digits;
     //cur_underline.x = x - (cur_ind + 1) * button_size;
     
@@ -373,22 +391,20 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     this.checkAnswer(); 
   }
 
-  // show whether user got problem right or now
-  {
-  var indicator = new createjs.Shape();
-  var indicator_pad = button_size / 6.0;
-  indicator.graphics.beginFill("#ff5555").drawRect(
-      x + indicator_pad, y + indicator_pad, 
-      button_size - indicator_pad * 2, button_size - indicator_pad * 2);
-  parent_container.addChild(indicator);
-  var indicator_msg = new createjs.Text("", "1px Courier", "#111");
-  indicator_msg.scaleX = button_size / 20.0;
-  indicator_msg.scaleY = button_size / 20.0;
-  indicator_msg.x = x + button_size/2;
-  indicator_msg.y = y + pad/2;
-  indicator_msg.textAlign = 'center';
-  parent_container.addChild(indicator_msg);
+  this.clear = function() {
+    for (var i = 0; i < box_texts.length; i++) {
+      var evt;
+      this.numClick(evt, {num:0} );
+      //box_texts[i].text = "";
+    }
+    cur_ind = num_digits - 1;
+    selectBox(cur_ind);
+    stage.update();
   }
+
+  this.clear();
+  
+
   return this;
 }
 
@@ -489,14 +505,16 @@ function Problems(min_op1, max_op1, min_op2, max_op2) {
       all.push(prob);
     }
   }
+ 
 
   this.next = function() {
     ind = Math.floor(Math.random() * all.length);
     digit_display1.setDigits(all[ind].num1);
     digit_display2.setDigits(all[ind].num2);
-    num_entry_box.checkAnswer();
+    num_entry_box.clear();
     problem_area.update();
   }
+  
 
   this.getAnswer = function() {
     return all[ind].answer;
@@ -558,18 +576,20 @@ function init() {
   }
   console.log("ops " + min_op1 + " - " + max_op1 + ", " + min_op2 + " - " + max_op2);
 
-  problems = Problems(min_op1, max_op1, min_op2, max_op2);
+  problems = new Problems(min_op1, max_op1, min_op2, max_op2);
 
   var display_button_size = button_size * 0.8; //2.0/3.0;
-  num_entry_box = NumEntryBox(x, button_size * 4, base, button_size, stage, 2);
-  numpad = NumPad(base, stage, num_entry_box);
+  num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
+      display_button_size, stage, 2);
+  numpad = new NumPad(base, stage, num_entry_box);
   
   digit_display1 = new DigitDisplay(x, display_button_size * 2, 
       base, 5, display_button_size, stage);
   digit_display2 = new DigitDisplay(x, display_button_size * 3, 
       base, 5, display_button_size, stage);
+  problem_area = new ProblemArea(x, display_button_size * 3, 
+      base, display_button_size, stage);
 
-  problem_area = ProblemArea(x, button_size * 3, base, stage);
   problems.next();
 
   stage.update();
