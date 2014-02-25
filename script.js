@@ -175,8 +175,8 @@ function DigitDisplay(x, y, base, length, button_size, parent_container) {
     }
     
     this.num_digits = new_digits.length;
-    console.log(" new digits " + num + " " + new_digits.length + " " 
-        + digits.reverse());
+    //console.log(" new digits " + num + " " + new_digits.length + " " 
+    //    + digits.reverse());
     stage.update(); 
   }
 
@@ -190,7 +190,7 @@ function Problem(x, y, sz, num1, num2, parent_container) {
   this.num2 = Math.floor(num2);
   // later have problem types for subtraction and multiplication and division
   this.answer = this.num1 + this.num2;
-  console.log("problem " + this.num1 + " " + this.num2 + " " + this.answer);
+  //console.log("problem " + this.num1 + " " + this.num2 + " " + this.answer);
 
   var correct = false;
   var x = x;
@@ -246,20 +246,21 @@ function ProblemArea(x, y, base, button_size, parent_container) {
   var num_digits = 0;
 
   this.update = function( ) {
-    num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
+    var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
+    num_digits = Math.max(num2digits(problems.max_answer, base).length, num_digits + 1);
     console.log("num digits problem area " + num_digits + " " + 
         digit_display1.num_digits + " " + digit_display2.num_digits);
-    underline.x = x - (num_digits + 1) * button_size;
+    underline.x = x - (num_digits) * button_size;
     underline.y = y + button_size;
     underline.graphics.clear();
     underline.graphics.beginFill("#111111").drawRect(
-        0, -pad/2, button_size * (num_digits + 1), pad);
+        0, -pad/2, button_size * (num_digits), pad);
 
     msg.scaleX = button_size / 16;
     msg.scaleY = button_size / 16;
     msg.textAlign = 'center';
     var bd = msg.getBounds();
-    msg.x = x - (num_digits + 0.5) * button_size;
+    msg.x = x - (num_digits - 0.5) * button_size;
     msg.y = y;
   }
 
@@ -404,6 +405,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
       
       box_texts[i].text = "";
     }
+    unSelectBox(cur_ind);
     cur_ind = num_digits - 1;
     selectBox(cur_ind);
     this.checkAnswer();
@@ -502,6 +504,8 @@ function Problems(min_op1, max_op1, min_op2, max_op2) {
   var ind = 0;
   var all = [];
 
+  this.max_answer = 0;
+
   var sz = 10;
   for (var i = min_op1; i < max_op1; i++) {
     for (var j = min_op2; j < max_op2; j++) {
@@ -510,10 +514,11 @@ function Problems(min_op1, max_op1, min_op2, max_op2) {
       var px = sz + sz * (ind % num_row);
       var py = sz + sz * Math.floor(ind / num_row);
       var prob = new Problem(px, py, sz, i, j, stage);
+      if (prob.answer > this.max_answer) this.max_answer = prob.answer;
       all.push(prob);
     }
   }
- 
+  
 
   this.next = function() {
     // should have a mode where there can be weights for 
@@ -562,7 +567,6 @@ function init() {
   context.webkitImageSmoothingEnabled = false;
 
   button_size = ht/6;
-  var x = 0.55 * wd;
 
   var url_base = getURLParameter("base");
   // base = 1 isn't supported yet
@@ -601,14 +605,20 @@ function init() {
   problems = new Problems(min_op1, max_op1, min_op2, max_op2);
 
   var display_button_size = button_size * 0.8; //2.0/3.0;
-  num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
-      display_button_size, stage, 2);
+  
+  var x = 0.6 * wd;
+  var max_length = num2digits(problems.max_answer, base).length;
+  {
+    console.log("max length " + max_length);
+    num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
+        display_button_size, stage, max_length);
+  }
   numpad = new NumPad(base, stage, num_entry_box);
   
   digit_display1 = new DigitDisplay(x, display_button_size * 2, 
-      base, 5, display_button_size, stage);
+      base, max_length, display_button_size, stage);
   digit_display2 = new DigitDisplay(x, display_button_size * 3, 
-      base, 5, display_button_size, stage);
+      base, max_length, display_button_size, stage);
   problem_area = new ProblemArea(x, display_button_size * 3, 
       base, display_button_size, stage);
 
