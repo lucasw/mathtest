@@ -184,11 +184,23 @@ function DigitDisplay(x, y, base, length, button_size, parent_container) {
   return this;
 }
 
-function Problem(x, y, sz, num1, num2, parent_container) {
+function Problem(operator, x, y, sz, num1, num2, parent_container) {
   this.num1 = Math.floor(num1);
   this.num2 = Math.floor(num2);
+  this.operator = operator;
   // later have problem types for subtraction and multiplication and division
-  this.answer = this.num1 + this.num2;
+  if (operator === "+")
+    this.answer = this.num1 + this.num2;
+  if ((operator === "x") ||
+      (operator === "*")) {
+    this.answer = this.num1 * this.num2;
+  }
+  if (operator === ">") 
+    this.answer = (this.num1 > this.num2) ? 1 : 0;
+  if (operator === "<") 
+    this.answer = (this.num1 < this.num2) ? 1 : 0;
+
+
   //console.log("problem " + this.num1 + " " + this.num2 + " " + this.answer);
 
   var correct = false;
@@ -229,7 +241,7 @@ function Problem(x, y, sz, num1, num2, parent_container) {
 
 // the operand and underline
 // Fixed to addition currently
-function ProblemArea(x, y, base, button_size, parent_container) {
+function ProblemArea(operator, x, y, base, button_size, parent_container) {
   
   var button_size = button_size;
   var x = x;
@@ -237,7 +249,7 @@ function ProblemArea(x, y, base, button_size, parent_container) {
   var base = base;
 
   var pad = button_size/25;
-  var msg = new createjs.Text("+", "1px Courier", "#111");
+  var msg = new createjs.Text(operator, "1px Courier", "#111");
   parent_container.addChild(msg);
   var underline = new createjs.Shape();
   parent_container.addChild(underline);
@@ -513,7 +525,7 @@ function NumPad(base, parent_container) {
 }
 
 
-function Problems(x, min_op1, max_op1, min_op2, max_op2) {
+function Problems(operator, x, min_op1, max_op1, min_op2, max_op2) {
   
   var min_op1 = min_op1;
   var max_op1 = max_op1;
@@ -532,7 +544,7 @@ function Problems(x, min_op1, max_op1, min_op2, max_op2) {
       var num_row = Math.floor(x / sz);
       var px = sz + sz * (ind % num_row);
       var py = sz + sz * Math.floor(ind / num_row);
-      var prob = new Problem(px, py, sz, i, j, stage);
+      var prob = new Problem(operator, px, py, sz, i, j, stage);
       if (prob.answer > this.max_answer) this.max_answer = prob.answer;
       all.push(prob);
     }
@@ -619,6 +631,12 @@ function init() {
   if (!isNaN(tmp) && (tmp > 0)) {
     max_op2 = tmp;
   }
+
+  var operator = "+";
+  var tmp = getURLParameter("operator");
+  if ((tmp != null) && (tmp.length == 1)) {
+    operator = tmp;  
+  }
   console.log("ops " + min_op1 + " - " + max_op1 + ", " + min_op2 + " - " + max_op2);
 
 
@@ -627,7 +645,7 @@ function init() {
   numpad = new NumPad(base, stage);
   var x = numpad.min_x - 2*display_button_size;
   
-  problems = new Problems(x, min_op1, max_op1, min_op2, max_op2);
+  problems = new Problems(operator, x, min_op1, max_op1, min_op2, max_op2);
   
   var max_length = num2digits(problems.max_answer, base).length;
   console.log("max length " + max_length);
@@ -639,7 +657,7 @@ function init() {
       base, max_length, display_button_size, stage);
   digit_display2 = new DigitDisplay(x, display_button_size * 3, 
       base, max_length, display_button_size, stage);
-  problem_area = new ProblemArea(x, display_button_size * 3, 
+  problem_area = new ProblemArea(operator, x, display_button_size * 3, 
       base, display_button_size, stage);
 
   problems.next();
