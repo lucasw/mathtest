@@ -430,38 +430,38 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
 }
 
 
-function NumButton(x, y, num, parent_container) {
+function NumButton(x, y, sz, num, parent_container) {
   var num = num;
-  
+  var sz = sz; 
   var button = new createjs.Shape();
   button.x = x;
   button.y = y;
-  var pad = button_size / 40.0;
+  var pad = sz / 30.0;
   parent_container.addChild(button);
   
   this.connect = function(num_entry_box) {
     button.on("click", num_entry_box.numClickEvt, null, false, {that:num_entry_box,num:num});
   }
 
-  var msg = new createjs.Text("", button_size + "px Courier", "#111");
+  var msg = new createjs.Text("", sz + "px Courier", "#111");
   msg.text = num.toString(base);
   msg.textAlign = 'center';
   var bd = msg.getBounds();
-  msg.x = x + pad + button_size/2;
-  msg.y = y - button_size/16;
+  msg.x = x + pad + sz/2;
+  msg.y = y - sz/16;
   parent_container.addChild(msg);
 
   this.unHighlight = function() {
     button.graphics.clear();
     button.graphics.beginFill("#eeeeee").drawRect(
-      pad, pad, button_size - pad * 2, button_size - pad * 2);
+      pad, pad, sz - pad * 2, sz - pad * 2);
 
   }
   this.highlight = function() {
     console.log("highlight " + num);
     button.graphics.clear();
     button.graphics.beginFill("#cbcbcb").drawRect(
-      pad, pad, button_size - pad * 2, button_size - pad * 2);
+      pad, pad, sz - pad * 2, sz - pad * 2);
   }
 
   this.unHighlight();
@@ -475,19 +475,22 @@ function NumPad(base, parent_container) {
 
   container = new createjs.Container();
   parent_container.addChild(container);
-  
-  var buttons_per_column = Math.floor(ht / button_size);
-  var x_start = wd - button_size * Math.ceil(base / buttons_per_column);
+ 
+
+  var sz = ht / 5;
+
+  var buttons_per_column = Math.floor(ht / sz);
+  var x_start = wd - sz * Math.ceil(base / buttons_per_column);
 
   var num_buttons = [];
 
   this.min_x = x_start;
 
   for (var i = 0; i < base; i++) {
-    var x = x_start + button_size * Math.floor(i / buttons_per_column);
+    var x = x_start + sz * Math.floor(i / buttons_per_column);
     if (x < this.min_x) min_x = x;
-    var y = (i % buttons_per_column) * button_size; 
-    var num_button = new NumButton(x, y, i, container);
+    var y = (i % buttons_per_column) * sz; 
+    var num_button = new NumButton(x, y, sz, i, container);
     num_buttons.push(num_button);
     //num_buttons[0].highlight();
   }
