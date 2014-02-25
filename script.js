@@ -421,7 +421,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
 }
 
 
-function NumButton(x, y, num, parent_container, num_entry_box) {
+function NumButton(x, y, num, parent_container) {
   var num = num;
   
   var button = new createjs.Shape();
@@ -429,8 +429,10 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   button.y = y;
   var pad = button_size / 40.0;
   parent_container.addChild(button);
-  //var listener = 
-  button.on("click", num_entry_box.numClick, null, false, {num:num});
+  
+  this.connect = function(num_entry_box) {
+    button.on("click", num_entry_box.numClick, null, false, {num:num});
+  }
 
   var msg = new createjs.Text("", "1px Courier", "#111");
   msg.scaleX = button_size / 16;
@@ -460,7 +462,7 @@ function NumButton(x, y, num, parent_container, num_entry_box) {
   return this;
 }
 
-function NumPad(base, parent_container, num_entry_box) {
+function NumPad(base, parent_container) {
 
   var base = base;
 
@@ -471,12 +473,22 @@ function NumPad(base, parent_container, num_entry_box) {
   var x_start = wd - button_size * Math.ceil(base / buttons_per_column);
 
   var num_buttons = [];
+
+  this.min_x = x_start;
+
   for (var i = 0; i < base; i++) {
     var x = x_start + button_size * Math.floor(i / buttons_per_column);
+    if (x < this.min_x) min_x = x;
     var y = (i % buttons_per_column) * button_size; 
-    var num_button = new NumButton(x, y, i, container, num_entry_box);
+    var num_button = new NumButton(x, y, i, container);
     num_buttons.push(num_button);
     //num_buttons[0].highlight();
+  }
+  
+  this.connectButtons = function(num_entry_box) {
+    for (var i = 0; i < num_buttons.length; i++) {
+      num_buttons[i].connect(num_entry_box);
+    }
   }
 
   this.highlight = function(num) {
@@ -496,7 +508,7 @@ function NumPad(base, parent_container, num_entry_box) {
 }
 
 
-function Problems(min_op1, max_op1, min_op2, max_op2) {
+function Problems(x, min_op1, max_op1, min_op2, max_op2) {
   
   var min_op1 = min_op1;
   var max_op1 = max_op1;
@@ -512,7 +524,7 @@ function Problems(min_op1, max_op1, min_op2, max_op2) {
   for (var i = min_op1; i < max_op1; i++) {
     for (var j = min_op2; j < max_op2; j++) {
       var ind = (i - min_op1) + (j - min_op2) * (max_op1 - min_op1);
-      var num_row = Math.floor(wd / (1.5 * sz));
+      var num_row = Math.floor(x / sz);
       var px = sz + sz * (ind % num_row);
       var py = sz + sz * Math.floor(ind / num_row);
       var prob = new Problem(px, py, sz, i, j, stage);
@@ -604,18 +616,21 @@ function init() {
   }
   console.log("ops " + min_op1 + " - " + max_op1 + ", " + min_op2 + " - " + max_op2);
 
-  problems = new Problems(min_op1, max_op1, min_op2, max_op2);
 
   var display_button_size = button_size * 0.8; //2.0/3.0;
   
-  var x = 0.6 * wd;
+  numpad = new NumPad(base, stage);
+  var x = numpad.min_x - 2*display_button_size;
+  
+  problems = new Problems(x, min_op1, max_op1, min_op2, max_op2);
+  
   var max_length = num2digits(problems.max_answer, base).length;
   {
     console.log("max length " + max_length);
     num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
         display_button_size, stage, max_length);
   }
-  numpad = new NumPad(base, stage, num_entry_box);
+  numpad.connectButtons(num_entry_box);
   
   digit_display1 = new DigitDisplay(x, display_button_size * 2, 
       base, max_length, display_button_size, stage);
