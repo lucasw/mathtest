@@ -39,6 +39,7 @@ function getURLParameter(name) {
   return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
 }
 
+// TODO make left and right arrows move the cur_ind of the num_entry_box
 function handleKeyDown(e) {
   if (!e) { 
     console.log("tst");
@@ -58,8 +59,7 @@ function handleKeyDown(e) {
   if (regex.test(key)) {
     num = key.charCodeAt(0) - "0".charCodeAt(0);
     //console.log("key code " + num );
-    var evt;
-    num_entry_box.numClick(evt, {num:num} );
+    num_entry_box.numClick(num);
 
     return false;
   }
@@ -68,8 +68,7 @@ function handleKeyDown(e) {
     // lowercase characters for base > 10
     num = key.charCodeAt(0) - "a".charCodeAt(0) + 10;
     if ((num >= 0) && (num < base)) {
-      var evt;
-      num_entry_box.numClick(evt, {num:num} );
+      num_entry_box.numClick(num);
       return false;
     }
   }
@@ -381,12 +380,13 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     stage.update();
   }
   
-  this.numClick = function(evt, data) {
-    if (numpad != null)
-      numpad.highlight(data.num);
-    if (data.num >= base) return;  
 
-    digits[cur_ind] = data.num;
+  this.numClick = function(num) {
+    if (numpad != null)
+      numpad.highlight(num);
+    if (num >= base) return;  
+
+    digits[cur_ind] = num;
 
     unSelectBox(cur_ind);
 
@@ -400,7 +400,11 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     
     this.checkAnswer(); 
   }
-
+  
+  this.numClickEvt = function(evt, data) {
+    data.that.numClick(data.num); 
+  }
+  
   this.clear = function() {
     for (var i = 0; i < box_texts.length; i++) {
       digits[i] = -1;
@@ -431,7 +435,7 @@ function NumButton(x, y, num, parent_container) {
   parent_container.addChild(button);
   
   this.connect = function(num_entry_box) {
-    button.on("click", num_entry_box.numClick, null, false, {num:num});
+    button.on("click", num_entry_box.numClickEvt, null, false, {that:num_entry_box,num:num});
   }
 
   var msg = new createjs.Text("", "1px Courier", "#111");
@@ -489,6 +493,7 @@ function NumPad(base, parent_container) {
     for (var i = 0; i < num_buttons.length; i++) {
       num_buttons[i].connect(num_entry_box);
     }
+   // num_entry_box.checkAnswer();
   }
 
   this.highlight = function(num) {
@@ -625,11 +630,9 @@ function init() {
   problems = new Problems(x, min_op1, max_op1, min_op2, max_op2);
   
   var max_length = num2digits(problems.max_answer, base).length;
-  {
-    console.log("max length " + max_length);
-    num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
+  console.log("max length " + max_length);
+  num_entry_box = new NumEntryBox(x, display_button_size * 4, base, 
         display_button_size, stage, max_length);
-  }
   numpad.connectButtons(num_entry_box);
   
   digit_display1 = new DigitDisplay(x, display_button_size * 2, 
