@@ -478,6 +478,10 @@ function NumPad(base, parent_container) {
  
 
   var sz = ht / 5;
+  if (base < 3)
+    sz = ht / 3;
+  else if (base < 5)
+    sz = ht / base;
 
   var buttons_per_column = Math.floor(ht / sz);
   var x_start = wd - sz * Math.ceil(base / buttons_per_column);
@@ -637,7 +641,7 @@ function init() {
   var display_button_size = button_size * 0.8; //2.0/3.0;
   
   numpad = new NumPad(base, stage);
-  var x = numpad.min_x - 2*display_button_size;
+  var x = numpad.min_x - 1.5 * display_button_size;
   
   problems = new Problems(operator, x, min_op1, max_op1, min_op2, max_op2);
   
