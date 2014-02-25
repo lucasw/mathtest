@@ -102,8 +102,9 @@ function num2digits(num, base) {
 }
 
 // draw an array of digits from right to left
-function DigitDisplay(x, y, base, length, parent_container) {
-  
+function DigitDisplay(x, y, base, length, button_size, parent_container) {
+ 
+  var button_size = button_size;
   var base = base;
 
   var boxes = [];
@@ -522,8 +523,11 @@ function init() {
   num_entry_box = NumEntryBox(x, button_size * 4, base, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
   
-  digit_display1 = new DigitDisplay(x, button_size * 2, base, 5, stage);
-  digit_display2 = new DigitDisplay(x, button_size * 3, base, 5, stage);
+  var display_button_size = button_size * 0.8; //2.0/3.0;
+  digit_display1 = new DigitDisplay(x, display_button_size * 2, 
+      base, 5, display_button_size, stage);
+  digit_display2 = new DigitDisplay(x, display_button_size * 3, 
+      base, 5, display_button_size, stage);
 
   var sz = 10;
   for (var i = min_op1; i < max_op1; i++) {
