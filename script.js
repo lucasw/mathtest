@@ -484,6 +484,8 @@ function NumPad(base, parent_container) {
     sz = ht / base;
 
   var buttons_per_column = Math.floor(ht / sz);
+  if (base % 4 == 0)
+    buttons_per_column = 4
   var x_start = wd - sz * Math.ceil(base / buttons_per_column);
 
   var num_buttons = [];
