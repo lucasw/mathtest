@@ -534,6 +534,7 @@ function Problems(operator, x, min_op1, max_op1, min_op2, max_op2) {
 
   this.max_answer = 0;
 
+  // TODO there is a problem with max_op1 generation too big of operands
   var sz = 10;
   for (var i = min_op1; i < max_op1; i++) {
     for (var j = min_op2; j < max_op2; j++) {
