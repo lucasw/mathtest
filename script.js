@@ -28,6 +28,8 @@ var digit_display1;
 var digit_display2;
 var problem_area;
 var problems;
+// skip to next problem when current one is right
+var auto_next = false;
 // index into problems
 
 var did_update = true;
@@ -316,7 +318,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     parent_container.addChild(box);
     boxes.push(box);
 
-    var digit = 0;
+    var digit = -1;
     digits.push(digit);
     
     var msg = new createjs.Text("", "1px Courier", "#111");
@@ -335,7 +337,6 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     unSelectBox(i);
   }
  
-
   if (false) {
   var cur_underline = new createjs.Shape();
   cur_underline.x = x - (cur_ind + 1) * button_size;
@@ -343,7 +344,6 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
   cur_underline.graphics.beginFill("#919591").drawRect(pad, 0, button_size - pad * 2, pad);
   parent_container.addChild(cur_underline);
   }
-
 
   this.checkAnswer = function() {
     var answer = 0;
@@ -361,6 +361,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
           button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "\u2714";
       problems.gotRight();
+      if (auto_next) problems.next();
     } else {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#ff5555").drawRect(
@@ -393,12 +394,13 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
 
   this.clear = function() {
     for (var i = 0; i < box_texts.length; i++) {
-      var evt;
-      this.numClick(evt, {num:0} );
-      //box_texts[i].text = "";
+      digits[i] = -1;
+      
+      box_texts[i].text = "";
     }
     cur_ind = num_digits - 1;
     selectBox(cur_ind);
+    this.checkAnswer();
     stage.update();
   }
 
@@ -549,8 +551,14 @@ function init() {
   var x = 0.55 * wd;
 
   var url_base = getURLParameter("base");
-  if (!isNaN(url_base) && (url_base > 0)) {
+  // base = 1 isn't supported yet
+  if (!isNaN(url_base) && (url_base > 1)) {
     base = url_base;
+  }
+  
+  var url_auto_next = getURLParameter("auto_next");
+  if (!isNaN(url_auto_next) && (url_auto_next >= 0)) {
+    auto_next = (url_auto_next > 0);
   }
 
   var min_op1 = 0;
