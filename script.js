@@ -126,9 +126,6 @@ function DigitDisplay(x, y, base, length, button_size, parent_container) {
     digits.push(digit);
     
     var msg = new createjs.Text("", button_size + "px Courier", "#111");
-    // this didn't work right outside of chrome
-    //msg.scaleX = button_size; // / 16;
-    //msg.scaleY = button_size;// / 16;
     msg.text = digit.toString(base);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
@@ -661,6 +658,27 @@ function init() {
       base, display_button_size, stage);
 
   problems.next();
+
+  // next button
+  {
+    var next_button = new createjs.Shape(); 
+    stage.addChild(next_button);
+    
+    var pad = button_size / 30.0
+    next_button.x = 0;
+    next_button.y = ht - 1.5* button_size;
+    next_button.graphics.beginFill("#ddffcc").drawRect(
+        pad, pad, 2 * button_size - pad * 2, 1.5 * button_size - pad * 2);
+    
+    next_button.on("click", problems.next);
+
+    var msg = new createjs.Text("->", button_size + "px Courier", "#111");
+    msg.textAlign = 'center';
+    var bd = msg.getBounds();
+    msg.x = next_button.x + pad + bd.width/2 + button_size/3;
+    msg.y = next_button.y + 1.5 / 2.0 * button_size - bd.height/1.5;
+    stage.addChild(msg);
+  }
 
   stage.update();
 }
