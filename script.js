@@ -28,9 +28,8 @@ var digit_display1;
 var digit_display2;
 
 var problem_area;
-var problems = [];
+var problems;
 // index into problems
-var cur_problem;
 
 var did_update = true;
 
@@ -76,7 +75,7 @@ function handleKeyDown(e) {
 
   switch (e.keyCode) {
     case 13: // enter
-      nextProblem(); 
+      problems.next(); 
       return false;
       break;
   }
@@ -261,8 +260,9 @@ function ProblemArea(x, y, base, parent_container) {
 }
 
 // TODO refactor to use DigitDisplay
-function NumEntryBox(x, y, base, parent_container, num_digits) {
- 
+function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
+  
+  var button_size = button_size;
   var base = base;
   var x = x;
   var y = y;
@@ -335,22 +335,22 @@ function NumEntryBox(x, y, base, parent_container, num_digits) {
       answer += digits[i] * factor;
       factor *= base;
     }
-    console.log("answer " + answer + " " + problems[cur_problem].answer);
+    console.log("answer " + answer + " " + problems.getAnswer());
     
-    if (answer === problems[cur_problem].answer) {
+    if (answer === problems.getAnswer()) {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#11ee11").drawRect(
           x + indicator_pad, y + indicator_pad, 
           button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "\u2714";
-      problems[cur_problem].gotRight();
+      problems.gotRight();
     } else {
       indicator.graphics.clear();
       indicator.graphics.beginFill("#ff5555").drawRect(
           x + indicator_pad, y + indicator_pad, 
           button_size - indicator_pad * 2, button_size - indicator_pad * 2);
       indicator_msg.text = "";
-      problems[cur_problem].gotWrong();
+      problems.gotWrong();
     }
     stage.update();
   }
@@ -467,12 +467,50 @@ function NumPad(base, parent_container, num_entry_box) {
   return this;
 }
 
-function nextProblem() {
-  cur_problem = Math.floor(Math.random() * problems.length);
-  digit_display1.setDigits(problems[cur_problem].num1);
-  digit_display2.setDigits(problems[cur_problem].num2);
-  num_entry_box.checkAnswer();
-  problem_area.update();
+
+function Problems(min_op1, max_op1, min_op2, max_op2) {
+  
+  var min_op1 = min_op1;
+  var max_op1 = max_op1;
+  var min_op2 = min_op2;
+  var max_op2 = max_op2;
+
+  var ind = 0;
+  var all = [];
+
+  var sz = 10;
+  for (var i = min_op1; i < max_op1; i++) {
+    for (var j = min_op2; j < max_op2; j++) {
+      var ind = (i - min_op1) + (j - min_op2) * (max_op1 - min_op1);
+      var num_row = Math.floor(wd / (1.5 * sz));
+      var px = sz + sz * (ind % num_row);
+      var py = sz + sz * Math.floor(ind / num_row);
+      var prob = new Problem(px, py, sz, i, j, stage);
+      all.push(prob);
+    }
+  }
+
+  this.next = function() {
+    ind = Math.floor(Math.random() * all.length);
+    digit_display1.setDigits(all[ind].num1);
+    digit_display2.setDigits(all[ind].num2);
+    num_entry_box.checkAnswer();
+    problem_area.update();
+  }
+
+  this.getAnswer = function() {
+    return all[ind].answer;
+  }
+
+  this.gotRight = function() {
+    all[ind].gotRight();
+  }
+
+  this.gotWrong = function() {
+    all[ind].gotWrong();
+  }
+
+  return this;
 }
 
 // later pass this in via web form or url args
@@ -520,29 +558,19 @@ function init() {
   }
   console.log("ops " + min_op1 + " - " + max_op1 + ", " + min_op2 + " - " + max_op2);
 
-  num_entry_box = NumEntryBox(x, button_size * 4, base, stage, 2);
+  problems = Problems(min_op1, max_op1, min_op2, max_op2);
+
+  var display_button_size = button_size * 0.8; //2.0/3.0;
+  num_entry_box = NumEntryBox(x, button_size * 4, base, button_size, stage, 2);
   numpad = NumPad(base, stage, num_entry_box);
   
-  var display_button_size = button_size * 0.8; //2.0/3.0;
   digit_display1 = new DigitDisplay(x, display_button_size * 2, 
       base, 5, display_button_size, stage);
   digit_display2 = new DigitDisplay(x, display_button_size * 3, 
       base, 5, display_button_size, stage);
 
-  var sz = 10;
-  for (var i = min_op1; i < max_op1; i++) {
-    for (var j = min_op2; j < max_op2; j++) {
-      var ind = (i - min_op1) + (j - min_op2) * (max_op1 - min_op1);
-      var num_row = Math.floor(wd / (1.5 * sz));
-      var px = sz + sz * (ind % num_row);
-      var py = sz + sz * Math.floor(ind / num_row);
-      var prob = new Problem(px, py, sz, i, j, stage);
-      problems.push(prob);
-    }
-  }
-  
   problem_area = ProblemArea(x, button_size * 3, base, stage);
-  nextProblem();
+  problems.next();
 
   stage.update();
 }
