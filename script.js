@@ -192,6 +192,7 @@ function Problem(x, y, sz, num1, num2, parent_container) {
   this.answer = this.num1 + this.num2;
   console.log("problem " + this.num1 + " " + this.num2 + " " + this.answer);
 
+  var correct = false;
   var x = x;
   var y = y;
   var sz = sz;
@@ -202,9 +203,13 @@ function Problem(x, y, sz, num1, num2, parent_container) {
       x + pad, y + pad, 
       sz - pad * 2, sz - pad * 2);
   parent_container.addChild(indicator);
-  
-  this.gotWrong = function() {
+ 
+  this.wasCorrect = function() {
+    return correct;
+  }
 
+  this.gotWrong = function() {
+    correct = false;
     indicator.graphics.clear();
     indicator.graphics.beginFill("#ff5555").drawRect(
       x + pad, y + pad, 
@@ -213,6 +218,7 @@ function Problem(x, y, sz, num1, num2, parent_container) {
   }
 
   this.gotRight = function() {
+    correct = true;
     console.log("got right");
     indicator.graphics.clear();
     indicator.graphics.beginFill("#55ff55").drawRect(
@@ -510,7 +516,15 @@ function Problems(min_op1, max_op1, min_op2, max_op2) {
  
 
   this.next = function() {
+    // should have a mode where there can be weights for 
+    // how likely a problem should be - problems that haven't
+    // been attempted should have high weights, and problems that were
+    // right should have low, or even zero weight so they don't come up again
     ind = Math.floor(Math.random() * all.length);
+    // for now just make correct problems a little less likely
+    if (all[ind].wasCorrect())
+      ind = Math.floor(Math.random() * all.length);
+
     digit_display1.setDigits(all[ind].num1);
     digit_display2.setDigits(all[ind].num2);
     num_entry_box.clear();
