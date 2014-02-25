@@ -125,14 +125,15 @@ function DigitDisplay(x, y, base, length, button_size, parent_container) {
     var digit = 0;
     digits.push(digit);
     
-    var msg = new createjs.Text("", "1px Courier", "#111");
-    msg.scaleX = button_size / 16;
-    msg.scaleY = button_size / 16;
+    var msg = new createjs.Text("", button_size + "px Courier", "#111");
+    // this didn't work right outside of chrome
+    //msg.scaleX = button_size; // / 16;
+    //msg.scaleY = button_size;// / 16;
     msg.text = digit.toString(base);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
-    msg.y = box.y - bd.height/2;
+    msg.y = box.y; // - bd.height/2;
     msg.text ="x";
 
     parent_container.addChild(msg);
@@ -144,14 +145,12 @@ function DigitDisplay(x, y, base, length, button_size, parent_container) {
   var show_base = true;
   if (base == 10) show_base = false;
   if (show_base) {
-    var msg = new createjs.Text("", "1px Courier", "#111");
-    msg.scaleX = button_size / 64;
-    msg.scaleY = button_size / 64;
+    var msg = new createjs.Text("", button_size/4 + "px Courier", "#111");
     msg.text = base.toString(10);
     //msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = x;
-    msg.y = box.y + button_size - bd.height * msg.scaleY;
+    msg.y = box.y + button_size - button_size/4;
 
     parent_container.addChild(msg);
   }
@@ -249,7 +248,7 @@ function ProblemArea(operator, x, y, base, button_size, parent_container) {
   var base = base;
 
   var pad = button_size/25;
-  var msg = new createjs.Text(operator, "1px Courier", "#111");
+  var msg = new createjs.Text(operator, button_size + "px Courier", "#111");
   parent_container.addChild(msg);
   var underline = new createjs.Shape();
   parent_container.addChild(underline);
@@ -268,8 +267,6 @@ function ProblemArea(operator, x, y, base, button_size, parent_container) {
     underline.graphics.beginFill("#111111").drawRect(
         0, -pad/2, button_size * (num_digits), pad);
 
-    msg.scaleX = button_size / 16;
-    msg.scaleY = button_size / 16;
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = x - (num_digits - 0.5) * button_size;
@@ -304,9 +301,7 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
       x + indicator_pad, y + indicator_pad, 
       button_size - indicator_pad * 2, button_size - indicator_pad * 2);
   parent_container.addChild(indicator);
-  var indicator_msg = new createjs.Text("", "1px Courier", "#111");
-  indicator_msg.scaleX = button_size / 20.0;
-  indicator_msg.scaleY = button_size / 20.0;
+  var indicator_msg = new createjs.Text("", button_size + "px Courier", "#111");
   indicator_msg.x = x + button_size/2;
   indicator_msg.y = y + pad/2;
   indicator_msg.textAlign = 'center';
@@ -340,14 +335,12 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
     var digit = -1;
     digits.push(digit);
     
-    var msg = new createjs.Text("", "1px Courier", "#111");
-    msg.scaleX = button_size / 16;
-    msg.scaleY = button_size / 16;
+    var msg = new createjs.Text("", button_size + "px Courier", "#111");
     msg.text = digit.toString(base);
     msg.textAlign = 'center';
     var bd = msg.getBounds();
     msg.x = box.x + pad + button_size/2;
-    msg.y = box.y - bd.height;
+    msg.y = box.y;
     msg.text ="";
 
     parent_container.addChild(msg);
@@ -450,14 +443,12 @@ function NumButton(x, y, num, parent_container) {
     button.on("click", num_entry_box.numClickEvt, null, false, {that:num_entry_box,num:num});
   }
 
-  var msg = new createjs.Text("", "1px Courier", "#111");
-  msg.scaleX = button_size / 16;
-  msg.scaleY = button_size / 16;
+  var msg = new createjs.Text("", button_size + "px Courier", "#111");
   msg.text = num.toString(base);
   msg.textAlign = 'center';
   var bd = msg.getBounds();
   msg.x = x + pad + button_size/2;
-  msg.y = y - bd.height/2;
+  msg.y = y - button_size/16;
   parent_container.addChild(msg);
 
   this.unHighlight = function() {
