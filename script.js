@@ -246,8 +246,9 @@ function ProblemArea(x, y, base, button_size, parent_container) {
   var num_digits = 0;
 
   this.update = function( ) {
-    var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
-    num_digits = Math.max(num2digits(problems.max_answer, base).length, num_digits + 1);
+    //var num_digits = Math.max(digit_display1.num_digits, digit_display2.num_digits);
+    var max_answer_length = num2digits(problems.max_answer, base).length;
+    num_digits = max_answer_length + 1; //Math.max(max_answer_length, num_digits + 1);
     console.log("num digits problem area " + num_digits + " " + 
         digit_display1.num_digits + " " + digit_display2.num_digits);
     underline.x = x - (num_digits) * button_size;
@@ -383,7 +384,8 @@ function NumEntryBox(x, y, base, button_size, parent_container, num_digits) {
   this.numClick = function(evt, data) {
     if (numpad != null)
       numpad.highlight(data.num);
-    
+    if (data.num >= base) return;  
+
     digits[cur_ind] = data.num;
 
     unSelectBox(cur_ind);
